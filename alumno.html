@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Intranet UPAP | Alumno - Historial Académico</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--upap:#8a171f;--upap-d:#6a1118;--side:#313a46;--side-t:#8391a2;--bg:#f1f5f7}
+body{background:var(--bg);font-family:'Segoe UI',Tahoma,sans-serif;font-size:.9rem}
+#side{position:fixed;inset:0 auto 0 0;width:250px;background:var(--side);overflow-y:auto;z-index:1030;transition:transform .2s}
+#side .brand{padding:1rem 1.5rem;background:#fff;text-align:center}
+#side .brand img{height:44px}
+#side .menu-title{color:#8391a2;font-size:.72rem;padding:1.2rem 1.5rem .4rem;text-transform:uppercase;letter-spacing:.05em}
+#side a.nav-link{color:var(--side-t);padding:.65rem 1.5rem;display:flex;gap:.7rem;align-items:center;border-left:3px solid transparent}
+#side a.nav-link:hover{color:#fff}
+#side a.nav-link.active{color:#fff;background:rgba(255,255,255,.06);border-left-color:var(--upap)}
+#top{position:fixed;top:0;left:250px;right:0;height:70px;background:var(--upap);z-index:1020;display:flex;align-items:center;padding:0 1.5rem;color:#fff}
+#top .btn-link{color:#fff}
+main{margin-left:250px;padding:90px 1.5rem 2rem}
+.card{border:0;box-shadow:0 0 35px rgba(154,161,171,.15)}
+.stat i{font-size:1.9rem;color:var(--upap)}
+.stat .n{font-size:1.6rem;font-weight:600}
+.view{display:none}.view.on{display:block}
+.table thead th{background:#f1f5f7;font-weight:600;white-space:nowrap}
+.badge-ok{background:#0acf97}.badge-no{background:#fa5c7c}.badge-wait{background:#ffbc00;color:#313a46}.badge-info{background:#39afd1}
+.btn-upap{background:var(--upap);border-color:var(--upap);color:#fff}.btn-upap:hover{background:var(--upap-d);color:#fff}
+.tt{min-width:120px}
+.ribbon{background:#fff3cd;color:#664d03;border-radius:.3rem;padding:.4rem .8rem;font-size:.78rem}
+.sel-conv { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: #fff; border-radius: 5px; padding: 5px 10px; font-size: 0.85rem; outline: none;}
+.sel-conv option { color: #333; }
+@media(max-width:991px){#side{transform:translateX(-100%)}#side.open{transform:none}#top,main{left:0;margin-left:0}}
+</style>
+</head>
+<body>
+<aside id="side">
+  <div class="brand"><img src="https://intranet.upap.edu.py/assets/images/logo.png" alt="UPAP"></div>
+  <div class="menu-title">Navegación</div>
+  <nav class="nav flex-column">
+    <a class="nav-link active" data-v="inicio" href="#inicio"><i class="mdi mdi-view-dashboard-outline"></i>Inicio</a>
+    <a class="nav-link" data-v="calificaciones" href="#calificaciones"><i class="mdi mdi-school-outline"></i>Calificaciones</a>
+    <a class="nav-link" data-v="asistencia" href="#asistencia"><i class="mdi mdi-calendar-check-outline"></i>Asistencia</a>
+    <a class="nav-link" data-v="horario" href="#horario"><i class="mdi mdi-clock-outline"></i>Horario</a>
+    <a class="nav-link" data-v="cuenta" href="#cuenta"><i class="mdi mdi-cash-multiple"></i>Estado de cuenta</a>
+    <a class="nav-link" data-v="avisos" href="#avisos"><i class="mdi mdi-bell-outline"></i>Avisos</a>
+    <div class="menu-title">Recursos</div>
+    <a class="nav-link" href="https://cicco.org.py/" target="_blank"><i class="mdi mdi-book-open-variant"></i>Bibliotecas virtuales</a>
+  </nav>
+</aside>
+
+<header id="top">
+  <button class="btn btn-link d-lg-none me-2" id="burger"><i class="mdi mdi-menu fs-3"></i></button>
+  
+  <!-- SELETOR DE CONVOCATÓRIA (DO 1º AO 10º PERÍODO) -->
+  <div class="d-flex align-items-center gap-2">
+    <span class="fw-semibold d-none d-md-inline">Medicina</span>
+    <select id="selectConvocatoria" class="sel-conv">
+      <option value="2026.2" selected>2026.2 - 10º Semestre (Actual)</option>
+      <option value="2026.1">2026.1 - 9º Semestre</option>
+      <option value="2025.2">2025.2 - 8º Semestre</option>
+      <option value="2025.1">2025.1 - 7º Semestre</option>
+      <option value="2024.2">2024.2 - 6º Semestre</option>
+      <option value="2024.1">2024.1 - 5º Semestre</option>
+      <option value="2023.2">2023.2 - 4º Semestre</option>
+      <option value="2023.1">2023.1 - 3º Semestre</option>
+      <option value="2022.2">2022.2 - 2º Semestre</option>
+      <option value="2022.1">2022.1 - 1º Semestre</option>
+    </select>
+  </div>
+
+  <div class="ms-auto d-flex align-items-center gap-3">
+    <span class="text-end lh-sm"><b id="uName">Alumno</b><br><small id="uCi" class="opacity-75"></small></span>
+    <button class="btn btn-light btn-sm" id="logout"><i class="mdi mdi-logout"></i> Cerrar sesión</button>
+  </div>
+</header>
+
+<main>
+  <div class="ribbon mb-3" id="ribbonPeriodo"><i class="mdi mdi-information-outline"></i> Mostrando datos de la convocatoria: <b>2026.2</b> (Actual)</div>
+
+  <section id="v-inicio" class="view on">
+    <h4 class="mb-3">Bienvenido/a, <span class="uFirst">Alumno</span></h4>
+    <div class="row g-3 mb-3" id="stats"></div>
+    <div class="row g-3">
+      <div class="col-lg-7"><div class="card"><div class="card-body"><h6>Rotaciones / Clases de la semana</h6><div id="hoy"></div></div></div></div>
+      <div class="col-lg-5"><div class="card"><div class="card-body"><h6>Últimos avisos</h6><div id="avisosMini"></div></div></div></div>
+    </div>
+  </section>
+
+  <section id="v-calificaciones" class="view">
+    <div class="card"><div class="card-body">
+      <h5>Calificaciones</h5>
+      <p class="text-muted small">El presente informe es para uso interno de la institución, no tiene valor para terceros.</p>
+      <div class="d-flex justify-content-between mb-2 flex-wrap gap-2">
+        <label class="small">Mostrar <select id="calLen" class="form-select form-select-sm d-inline-block w-auto"><option>5</option><option selected>10</option><option>25</option></select> registros</label>
+        <label class="small">Buscar: <input id="calQ" class="form-control form-control-sm d-inline-block w-auto"></label>
+      </div>
+      <div class="table-responsive"><table class="table table-hover align-middle mb-2">
+        <thead><tr><th>Materia</th><th>Fecha</th><th>Asistencia</th><th>Nota</th><th>Tipo</th></tr></thead>
+        <tbody id="calBody"></tbody></table></div>
+      <div class="d-flex justify-content-between align-items-center"><small id="calInfo" class="text-muted"></small><div class="btn-group btn-group-sm" id="calPag"></div></div>
+    </div></div>
+  </section>
+
+  <section id="v-asistencia" class="view">
+    <div class="card"><div class="card-body"><h5>Asistencia a Prácticas</h5>
+      <div id="asis"></div></div></div>
+  </section>
+
+  <section id="v-horario" class="view">
+    <div class="card"><div class="card-body"><h5>Horario de Clases</h5>
+      <div class="table-responsive"><table class="table table-bordered text-center align-middle">
+        <thead><tr><th>Hora</th><th>Lunes</th><th>Martes</th><th>Miércoles</th><th>Jueves</th><th>Viernes</th></tr></thead>
+        <tbody id="horBody"></tbody></table></div></div></div>
+  </section>
+
+  <section id="v-cuenta" class="view">
+    <div class="card"><div class="card-body"><h5>Estado de cuenta</h5>
+      <div class="row g-3 mb-3" id="ctaStats"></div>
+      <div class="table-responsive"><table class="table table-hover align-middle">
+        <thead><tr><th>Concepto</th><th>Vencimiento</th><th class="text-end">Importe (Gs.)</th><th>Estado</th></tr></thead>
+        <tbody id="ctaBody"></tbody></table></div></div></div>
+  </section>
+
+  <section id="v-avisos" class="view">
+    <div class="card"><div class="card-body"><h5>Avisos y Comunicados</h5><div id="avisosFull"></div></div></div>
+  </section>
+</main>
+
+<script>
+/* ---- Sesión ---- */
+const sb = window.supabase.createClient(
+  'https://udmogmypguwszgnxuyys.supabase.co', 
+  'sb_publishable_nxP2KnttwCmuNIm0ObEqRQ_Q9zdy0a_'
+);
+
+/* =====================================================================
+   HISTORIAL ACADÉMICO COMPLETO (1º AO 10º PERÍODO)
+   ===================================================================== */
+const DB = {
+  '2026.2': { // 10º Semestre (Atual)
+    cal: [['Clínica Médica III','2026-09-10',100,5,'Ordinario'],['Clínica Quirúrgica III','2026-09-15',95,4,'Ordinario'],['Pediatría II','2026-09-20',88,5,'Ordinario'],['Oncología II','2026-09-22',92,4,'Ordinario'],['Medicina Tropical','2026-10-02',85,3,'Ordinario']],
+    asis: [['Clínica Médica III', 96],['Clínica Quirúrgica III', 91],['Pediatría II', 84],['Oncología II', 88]],
+    hor: {'07:00':['Rotación: Clínica Médica','Rotación: Cirugía','Rotación: Pediatría','Rotación: Clínica Médica','Libre'],'10:00':['Clases Teóricas','Oncología II','Medicina Tropical','Oftalmología II','Seminario'],'14:00':['Libre','Práctica Hospitalaria','Libre','Práctica Hospitalaria','Libre']},
+    cta: [['Matrícula 5º Año','2026-08-05',1500000,'Pagado'],['Cuota 1','2026-09-10',2000000,'Pagado'],['Cuota 2','2026-10-10',2000000,'Pendiente']],
+    avisos: [['Inscripción para el Internado (6º Año)','2026-10-15','El período de solicitud comienza la próxima semana.'],['Vencimiento de Cuota 2','2026-10-10','Recordá regularizar tu pago.']]
+  },
+  '2026.1': { // 9º Semestre
+    cal: [['Fisiopatología Médica IV','2026-03-10',100,4,'Ordinario'],['Radiología e Imagen II','2026-04-15',95,5,'Ordinario'],['Anatomía Patológica III','2026-05-05',90,3,'Ordinario'],['Salud Materno Infantil III','2026-06-20',85,4,'Ordinario']],
+    asis: [['Fisiopatología IV', 95],['Radiología II', 100],['Anatomía Patológica III', 82],['Salud Materno Infantil III', 78]],
+    hor: {'08:00':['Fisiopatología IV','Radiología II','Anatomía Patológica','Fisiopatología IV','Libre'],'11:00':['Salud Materno Infantil','','Salud Materno Infantil','','Patología Quirúrgica']},
+    cta: [['Matrícula 5º Año','2026-02-05',1500000,'Pagado'],['Cuota 1','2026-03-10',2000000,'Pagado'],['Cuota 2','2026-04-10',2000000,'Pagado']],
+    avisos: [['Cierre de Actas 2026.1','2026-06-30','Las notas finales ya fueron cargadas.'],['Exámenes Finales','2026-06-25','Consultar calendario.']]
+  },
+  '2025.2': { // 8º Semestre
+    cal: [['Farmacología III','2025-09-10',100,5,'Ordinario'],['Fisiopatología Médica I','2025-10-15',95,4,'Ordinario'],['Radiología e Imagen I','2025-11-05',92,5,'Ordinario'],['Anatomía Patológica I','2025-11-10',88,2,'Ordinario'],['Anatomía Patológica I','2025-12-01',88,4,'Extraordinario']],
+    asis: [['Farmacología III', 100],['Fisiopatología I', 92],['Radiología I', 90],['Anatomía Patológica I', 85]],
+    hor: {'07:00':['Farmacología III','Fisiopatología I','Radiología I','Farmacología III','Libre'],'09:00':['Anatomía Patológica I','','Anatomía Patológica I','','Fisiopatología I']},
+    cta: [['Matrícula 4º Año','2025-07-05',1400000,'Pagado'],['Cuota 1','2025-08-10',1800000,'Pagado'],['Cuota 2','2025-09-10',1800000,'Pagado'],['Cuota 3','2025-10-10',1800000,'Pagado'],['Cuota 4','2025-11-10',1800000,'Pagado']],
+    avisos: [['Bienvenidos al 4º Año','2025-07-20','Inicio de clases del nuevo año académico.']]
+  },
+  '2025.1': { // 7º Semestre
+    cal: [['Semiología Médica IV','2025-03-10',100,5,'Ordinario'],['Fisiopatología Médica II','2025-04-15',95,4,'Ordinario'],['Anatomía Patológica II','2025-05-05',92,4,'Ordinario'],['Patología Quirúrgica I','2025-06-10',88,4,'Ordinario']],
+    asis: [['Semiología IV', 100],['Fisiopatología II', 92],['Anatomía Patológica II', 90],['Patología Quirúrgica I', 85]],
+    hor: {'07:00':['Semiología IV','Fisiopatología II','Anatomía Patológica II','Patología Quirúrgica I','Libre'],'10:00':['','Semiología IV','','Semiología IV','']},
+    cta: [['Matrícula 4º Año','2025-02-05',1400000,'Pagado'],['Cuota 1','2025-03-10',1800000,'Pagado'],['Cuota 2','2025-04-10',1800000,'Pagado'],['Cuota 3','2025-05-10',1800000,'Pagado'],['Cuota 4','2025-06-10',1800000,'Pagado']],
+    avisos: [['Inicio de semestre','2025-02-20','Cronograma de evaluaciones disponible.']]
+  },
+  '2024.2': { // 6º Semestre
+    cal: [['Semiología Médica I','2024-09-10',100,5,'Ordinario'],['Farmacología I','2024-10-15',95,4,'Ordinario'],['Radiología General','2024-11-05',92,4,'Ordinario'],['Microbiología IV','2024-11-20',88,4,'Ordinario']],
+    asis: [['Semiología I', 98],['Farmacología I', 94],['Radiología General', 88],['Microbiología IV', 80]],
+    hor: {'08:00':['Semiología I','Farmacología I','Radiología General','Microbiología IV','Libre'],'11:00':['','Semiología I','','Farmacología I','']},
+    cta: [['Matrícula 3º Año','2024-07-05',1300000,'Pagado'],['Cuota 1','2024-08-10',1700000,'Pagado'],['Cuota 2','2024-09-10',1700000,'Pagado'],['Cuota 3','2024-10-10',1700000,'Pagado']],
+    avisos: [['Prácticas Hospitalarias','2024-08-15','Asignación de guardias en el Hospital de Clínicas.']]
+  },
+  '2024.1': { // 5º Semestre
+    cal: [['Fisiología Humana V','2024-03-10',100,4,'Ordinario'],['Bioquímica II','2024-04-15',95,5,'Ordinario'],['Fisioterapia II','2024-05-05',92,4,'Ordinario'],['Historia de la Medicina','2024-06-10',100,5,'Ordinario']],
+    asis: [['Fisiología V', 95],['Bioquímica II', 90],['Fisioterapia II', 92],['Historia de la Medicina', 100]],
+    hor: {'07:00':['Fisiología V','Bioquímica II','Fisioterapia II','Historia de la Medicina','Libre'],'09:00':['','Fisiología V','','Bioquímica II','']},
+    cta: [['Matrícula 3º Año','2024-02-05',1300000,'Pagado'],['Cuota 1','2024-03-10',1700000,'Pagado'],['Cuota 2','2024-04-10',1700000,'Pagado'],['Cuota 3','2024-05-10',1700000,'Pagado']],
+    avisos: [['Bienvenidos al 3º Año','2024-02-20','Inicio de clases.']]
+  },
+  '2023.2': { // 4º Semestre
+    cal: [['Microbiología IV','2023-09-10',100,4,'Ordinario'],['Fisiología Humana IV','2023-10-15',95,5,'Ordinario'],['Biofísica II','2023-11-05',92,4,'Ordinario'],['Medicina Familiar','2023-11-20',88,4,'Ordinario']],
+    asis: [['Microbiología IV', 100],['Fisiología IV', 92],['Biofísica II', 88],['Medicina Familiar', 95]],
+    hor: {'08:00':['Microbiología IV','Fisiología IV','Biofísica II','Medicina Familiar','Libre'],'10:00':['','Microbiología IV','','Fisiología IV','']},
+    cta: [['Matrícula 2º Año','2023-07-05',1200000,'Pagado'],['Cuota 1','2023-08-10',1600000,'Pagado'],['Cuota 2','2023-09-10',1600000,'Pagado'],['Cuota 3','2023-10-10',1600000,'Pagado']],
+    avisos: [['Actualización de datos','2023-08-01','Completar formulario de salud.']]
+  },
+  '2023.1': { // 3º Semestre
+    cal: [['Anatomía Humana III','2023-03-10',100,5,'Ordinario'],['Histología IV','2023-04-15',95,4,'Ordinario'],['Bioquímica I','2023-05-05',92,4,'Ordinario'],['Fisiología Humana I','2023-06-10',88,3,'Ordinario']],
+    asis: [['Anatomía III', 95],['Histología IV', 90],['Bioquímica I', 85],['Fisiología I', 88]],
+    hor: {'07:00':['Anatomía III','Histología IV','Bioquímica I','Fisiología I','Libre'],'09:00':['','Anatomía III','','Histología IV','']},
+    cta: [['Matrícula 2º Año','2023-02-05',1200000,'Pagado'],['Cuota 1','2023-03-10',1600000,'Pagado'],['Cuota 2','2023-04-10',1600000,'Pagado'],['Cuota 3','2023-05-10',1600000,'Pagado']],
+    avisos: [['Inicio del 2º Año','2023-02-20','Bienvenidos.']]
+  },
+  '2022.2': { // 2º Semestre
+    cal: [['Anatomía Humana II','2022-09-10',100,4,'Ordinario'],['Histología II','2022-10-15',95,5,'Ordinario'],['Química General II','2022-11-05',92,4,'Ordinario'],['Psicología General','2022-11-20',100,5,'Ordinario']],
+    asis: [['Anatomía II', 90],['Histología II', 95],['Química II', 88],['Psicología', 100]],
+    hor: {'08:00':['Anatomía II','Histología II','Química II','Psicología','Libre'],'10:00':['','Anatomía II','','Histología II','']},
+    cta: [['Matrícula 1º Año','2022-07-05',1000000,'Pagado'],['Cuota 1','2022-08-10',1500000,'Pagado'],['Cuota 2','2022-09-10',1500000,'Pagado'],['Cuota 3','2022-10-10',1500000,'Pagado']],
+    avisos: [['Resultados Primer Semestre','2022-07-15','Consultar calificaciones.']]
+  },
+  '2022.1': { // 1º Semestre
+    cal: [['Anatomía Humana I','2022-03-10',100,4,'Ordinario'],['Histología I','2022-04-15',95,4,'Ordinario'],['Química General I','2022-05-05',92,3,'Ordinario'],['Metodología de la Investigación','2022-06-10',100,5,'Ordinario']],
+    asis: [['Anatomía I', 95],['Histología I', 90],['Química I', 80],['Metodología', 100]],
+    hor: {'07:00':['Anatomía I','Histología I','Química I','Metodología','Libre'],'09:00':['','Anatomía I','','Histología I','']},
+    cta: [['Matrícula 1º Año','2022-02-05',1000000,'Pagado'],['Cuota 1','2022-03-10',1500000,'Pagado'],['Cuota 2','2022-04-10',1500000,'Pagado'],['Cuota 3','2022-05-10',1500000,'Pagado']],
+    avisos: [['Bienvenidos a la UPAP','2022-02-20','Inicio de clases para la carrera de Medicina.']]
+  }
+};
+
+let currentData = DB['2026.2']; // Começa no período atual
+const fmt=n=>n.toLocaleString('es-PY'), fd=d=>d.split('-').reverse().join('/');
+const $=id=>document.getElementById(id);
+
+/* ---- Navegação ---- */
+function show(v){
+  if(!document.getElementById('v-'+v)) v='inicio';
+  document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id==='v-'+v));
+  document.querySelectorAll('#side a[data-v]').forEach(a=>a.classList.toggle('active',a.dataset.v===v));
+  $('side').classList.remove('open');
+}
+window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
+$('burger').onclick=()=>$('side').classList.toggle('open');
+
+/* ---- Renderizações Dinâmicas ---- */
+let page=1;
+function renderCal(){
+  const q=$('calQ').value.toLowerCase(), len=+$('calLen').value;
+  const rows=currentData.cal.filter(r=>r[0].toLowerCase().includes(q));
+  const pages=Math.max(1,Math.ceil(rows.length/len)); page=Math.min(page,pages);
+  const s=(page-1)*len, cur=rows.slice(s,s+len);
+  $('calBody').innerHTML=cur.map(r=>`<tr><td>${r[0]}</td><td>${fd(r[1])}</td><td>${r[2]}%</td>
+    <td><span class="badge ${r[3]>=2?'badge-ok':'badge-no'}">${r[3]}</span></td><td>${r[4]}</td></tr>`).join('')
+    ||'<tr><td colspan="5" class="text-center text-muted">Sin resultados</td></tr>';
+  $('calInfo').textContent=`Mostrando ${rows.length?s+1:0} a ${s+cur.length} de ${rows.length} registros`;
+  $('calPag').innerHTML=Array.from({length:pages},(_,i)=>`<button class="btn ${i+1===page?'btn-upap':'btn-outline-secondary'}" data-p="${i+1}">${i+1}</button>`).join('');
+  $('calPag').querySelectorAll('button').forEach(b=>b.onclick=()=>{page=+b.dataset.p;renderCal()});
+}
+
+function renderAll() {
+  // 1. Stats e Início
+  const prom = currentData.cal.length ? (currentData.cal.reduce((a,r)=>a+r[3],0)/currentData.cal.length).toFixed(1) : '0.0';
+  const asi = currentData.asis.length ? Math.round(currentData.asis.reduce((a,r)=>a+r[1],0)/currentData.asis.length) : 0;
+  const pend = currentData.cta.filter(r=>r[3]==='Pendiente').reduce((a,r)=>a+r[2],0);
+  
+  const st=(i,n,l)=>`<div class="col-6 col-lg-3"><div class="card stat"><div class="card-body d-flex align-items-center gap-3"><i class="mdi ${i}"></i><div><div class="n">${n}</div><div class="text-muted small">${l}</div></div></div></div></div>`;
+  $('stats').innerHTML=st('mdi-star-outline',prom,'Promedio')+st('mdi-calendar-check-outline',asi+'%','Asistencia')+st('mdi-book-education-outline',currentData.asis.length,'Materias')+st('mdi-cash',fmt(pend),'Saldo pendiente');
+  
+  $('hoy').innerHTML=Object.entries(currentData.hor).map(([h,d])=>d[0]&&d[0]!=='Libre'?`<div class="d-flex gap-3 py-2 border-bottom"><b class="tt">${h}</b><span>${d[0]}</span></div>`:'').join('');
+  $('avisosMini').innerHTML=currentData.avisos.slice(0,2).map(a=>`<div class="mb-2"><b>${a[0]}</b><br><small class="text-muted">${fd(a[1])}</small></div>`).join('');
+  
+  // 2. Asistencia
+  $('asis').innerHTML=currentData.asis.map(([m,p])=>`<div class="mb-3"><div class="d-flex justify-content-between"><span>${m}</span><b>${p}%</b></div>
+    <div class="progress" style="height:8px"><div class="progress-bar ${p<75?'bg-danger':'bg-success'}" style="width:${p}%"></div></div></div>`).join('');
+  
+  // 3. Horário
+  $('horBody').innerHTML=Object.entries(currentData.hor).map(([h,d])=>`<tr><th>${h}</th>${d.map(x=>`<td>${x||'<span class="text-muted">-</span>'}</td>`).join('')}</tr>`).join('');
+  
+  // 4. Conta
+  const tot=currentData.cta.reduce((a,r)=>a+r[2],0), pag=tot-pend;
+  $('ctaStats').innerHTML=st('mdi-cash-check',fmt(pag),'Pagado (Gs.)')+st('mdi-cash-clock',fmt(pend),'Pendiente (Gs.)');
+  $('ctaBody').innerHTML=currentData.cta.map(r=>`<tr><td>${r[0]}</td><td>${fd(r[1])}</td><td class="text-end">${fmt(r[2])}</td>
+    <td><span class="badge ${r[3]==='Pagado'?'badge-ok':'badge-wait'}">${r[3]}</span></td></tr>`).join('');
+    
+  // 5. Avisos
+  $('avisosFull').innerHTML=currentData.avisos.map(a=>`<div class="border-bottom py-3"><b>${a[0]}</b> <small class="text-muted ms-2">${fd(a[1])}</small><p class="mb-0">${a[2]}</p></div>`).join('');
+  
+  // 6. Calificações
+  renderCal();
+}
+
+/* ---- Eventos ---- */
+$('calQ').oninput=()=>{page=1;renderCal()};$('calLen').onchange=()=>{page=1;renderCal()};
+
+// Evento do Seletor de Convocatória
+$('selectConvocatoria').onchange = (e) => {
+  const periodo = e.target.value;
+  currentData = DB[periodo];
+  
+  // Atualiza a faixa de aviso amarela
+  const isCurrent = periodo === '2026.2';
+  $('ribbonPeriodo').innerHTML = `<i class="mdi mdi-information-outline"></i> Mostrando datos de la convocatoria: <b>${periodo}</b> ${isCurrent ? '(Actual)' : '(Histórico)'}`;
+  
+  // Re-renderiza todos os dados
+  renderAll();
+};
+
+/* ---- Inicialização ---- */
+(async()=>{
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    if(!session){location.replace('index.html');return;}
+    const ci=(session.user.email||'').split('@')[0];
+    $('uCi').textContent='CI '+ci; $('uName').textContent='Alumno '+ci;
+    document.querySelectorAll('.uFirst').forEach(e=>e.textContent='alumno/a');
+    
+    renderAll();
+    show(location.hash.slice(1));
+  }catch(e){location.replace('index.html');}
+})();
+$('logout').onclick=async()=>{await sb.auth.signOut();location.replace('index.html');};
+</script>
+</body>
+</html>

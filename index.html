@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="light">
+<head>
+    <meta charset="utf-8">
+    <title>Acceso | Intranet UPAP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#8a171f">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Material Design Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- SweetAlert2 (para alertas bonitos) -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body class="authentication-bg pb-0">
+    <div class="auth-fluid">
+        <!-- Lado Esquerdo: Formulário -->
+        <div class="auth-fluid-form-box">
+            <div class="align-items-center d-flex h-100">
+                <div class="card-body">
+                    <div class="auth-brand text-center text-lg-start mb-4">
+                        <a href="./">
+                            <!-- Logo Oficial da UPAP -->
+                            <img src="https://intranet.upap.edu.py/assets/images/logo.png" alt="UPAP Logo" height="58">
+                        </a>
+                    </div>
+
+                    <h4 class="mt-0 mb-1">Acceso</h4>
+                    <p class="text-muted mb-4">Escribe tu número de identidad y contraseña para acceder a tu cuenta.</p>
+
+                    <form id="loginForm">
+                        <div class="mb-3">
+                            <label for="user" class="form-label">Usuario</label>
+                            <input id="user" type="text" class="form-control" required placeholder="Ingrese su N° de CI">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <a href="#" id="recuperar_pass" class="text-muted float-end" data-bs-toggle="modal" data-bs-target="#modal_recuperar_pass">
+                                <small>Olvidé mi contraseña</small>
+                            </a>
+                            <label for="pass" class="form-label">Contraseña</label>
+                            <input id="pass" type="password" class="form-control" required placeholder="Ingrese su contraseña">
+                        </div>
+
+                        <div class="d-grid mb-0 text-center">
+                            <button type="submit" id="acceder" class="btn btn-primary">
+                                <i class="mdi mdi-login"></i> Acceder 
+                            </button>
+                        </div>
+                    </form>
+
+                    <h4 class="mt-4 mb-1">¿Aún no eres alumno?</h4>
+                    <p class="text-muted mb-4">Realizá tu preinscripción <a href="#">aquí</a>.</p>
+
+                    <footer class="mt-auto">
+                        <p class="text-muted text-start mb-0">
+                            ¿Tienes dudas?<br>
+                            Visita nuestra sección de <a href="#">preguntas frecuentes</a> o utiliza el 
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#modal_consultas">formulario de contacto.</a>
+                        </p>
+                    </footer>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lado Direito: Imagem e Botões -->
+        <div class="auth-fluid-right text-center">
+            <div class="w-100 h-100 d-flex justify-content-center align-items-end container pb-5">
+                <div class="row" style="width: 24rem;">
+                    <a href="https://play.google.com/store/apps/details?id=com.rgfpy.intraupap" target="_blank" class="col-6">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" class="w-100 app-badge">
+                    </a>
+                    <a href="https://apps.apple.com/app/id1278435957" target="_blank" class="col-6">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="App Store" class="w-100 app-badge">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Recuperar Contraseña -->
+    <div id="modal_recuperar_pass" class="modal fade" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Recuperar Contraseña</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-2">
+                        <div class="col-md-4"><label>Nº Documento:</label></div>
+                        <div class="col-md-8"><input type="text" class="form-control" maxlength="15"></div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-md-4"><label>Email:</label></div>
+                        <div class="col-md-8"><input type="email" class="form-control" maxlength="50"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-primary">Recuperar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Consultas -->
+    <div id="modal_consultas" class="modal fade" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Consultas acerca de la Intranet UPAP</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <h4 class="mb-3">Por favor selecciona una opción</h4>
+                    <div class="row">
+                        <div class="col-6 d-grid">
+                            <button class="btn btn-primary btn-lg">Soy alumno/a</button>
+                        </div>
+                        <div class="col-6 d-grid">
+                            <button class="btn btn-primary btn-lg">Soy interesado/a</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Nosso Script -->
+    <script src="app.js" defer></script>
+   
+</body>
+</html>

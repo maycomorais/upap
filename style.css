@@ -1,0 +1,117 @@
+body, html {
+    height: 100%;
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f7f7f7;
+}
+
+.authentication-bg {
+    height: 100vh;
+    overflow: hidden;
+}
+
+.auth-fluid {
+    display: flex;
+    height: 100vh;
+}
+
+/* Lado Esquerdo (Formulário) */
+.auth-fluid-form-box {
+    width: 480px;
+    background-color: #ffffff;
+    padding: 2rem;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    overflow-y: auto;
+}
+
+.auth-fluid-form-box .card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100%;
+    padding: 2rem;
+}
+
+/* Lado Direito (Imagem) */
+.auth-fluid-right {
+    flex-grow: 1;
+    position: relative;
+    background-image: url('https://intranet.upap.edu.py/assets/images/bg-auth.jpg'); /* URL estimada, substitua se necessário */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Overlay suave na imagem para dar o tom avermelhado/rosado da foto original */
+.auth-fluid-right::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(138, 23, 31, 0.15); 
+    z-index: 0;
+}
+
+.auth-fluid-right > div {
+    position: relative;
+    z-index: 1;
+}
+
+/* Cores e Estilos customizados */
+h4 { color: #333; font-weight: 600; }
+a { color: #8a171f; text-decoration: none; }
+a:hover { color: #5c0f15; text-decoration: underline; }
+
+/* Botão Primário */
+.btn-primary {
+    background-color: #8a171f;
+    border-color: #8a171f;
+    padding: 10px;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+    background-color: #6a1118 !important;
+    border-color: #6a1118 !important;
+    box-shadow: 0 0 0 0.25rem rgba(138, 23, 31, 0.25);
+}
+
+.form-control {
+    padding: 10px 15px;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+}
+
+.form-control:focus {
+    border-color: #8a171f;
+    box-shadow: 0 0 0 0.2rem rgba(138, 23, 31, 0.15);
+}
+
+.app-badge {
+    max-height: 45px;
+    object-fit: contain;
+    transition: transform 0.2s;
+}
+
+.app-badge:hover {
+    transform: scale(1.05);
+}
+
+/* Responsividade para Mobile */
+@media (max-width: 991px) {
+    .auth-fluid-right {
+        display: none;
+    }
+    .auth-fluid-form-box {
+        width: 100%;
+    }
+    .authentication-bg {
+        height: auto;
+        overflow: auto;
+    }
+    .auth-fluid {
+        height: auto;
+    }
+}
