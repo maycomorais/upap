@@ -28,24 +28,53 @@ main{margin-left:250px;padding:90px 1.5rem 2rem}
 .badge-ok{background:#0acf97}.badge-no{background:#fa5c7c}.badge-wait{background:#ffbc00;color:#313a46}.badge-info{background:#39afd1}
 .btn-upap{background:var(--upap);border-color:var(--upap);color:#fff}.btn-upap:hover{background:var(--upap-d);color:#fff}
 .tt{min-width:120px}
+.table td small{font-size:.75rem}
 .ribbon{background:#fff3cd;color:#664d03;border-radius:.3rem;padding:.4rem .8rem;font-size:.78rem}
 .sel-conv { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: #fff; border-radius: 5px; padding: 5px 10px; font-size: 0.85rem; outline: none;}
 .sel-conv option { color: #333; }
-@media(max-width:991px){#side{transform:translateX(-100%)}#side.open{transform:none}#top,main{left:0;margin-left:0}}
+#side .btn-close{position:absolute;top:50%;right:1rem;transform:translateY(-50%)}
+.side-user{background:rgba(255,255,255,.06);padding:.7rem 1.5rem;color:#fff;line-height:1.3}
+.side-user small{display:block;color:var(--side-t)}
+#backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1025;display:none}
+body.side-open #backdrop{display:block}
+.sel-wrap{min-width:0;flex:1}.sel-conv{max-width:100%;text-overflow:ellipsis}
+.stat .n{white-space:nowrap}
+tr[data-sol]{cursor:pointer}
+a.list-group-item-action b{color:var(--upap)}
+@media(max-width:991px){
+ #side{transform:translateX(-100%);box-shadow:none}#side.open{transform:none;box-shadow:0 0 40px rgba(0,0,0,.4)}
+ #top,main{left:0;margin-left:0}#top{padding:0 .75rem;gap:.5rem}
+ main{padding:84px .85rem 1.5rem}
+}
+@media(max-width:575px){
+ .stat .card-body{padding:.75rem;gap:.5rem!important}.stat i{font-size:1.4rem}
+ .stat .n{font-size:1.1rem}.stat .small{font-size:.72rem}
+ h4{font-size:1.2rem}.card-body{padding:1rem}
+}
 </style>
 </head>
 <body>
+<div id="backdrop"></div>
 <aside id="side">
-  <div class="brand"><img src="https://intranet.upap.edu.py/assets/images/logo.png" alt="UPAP"></div>
-  <div class="menu-title">Navegación</div>
+  <div class="brand position-relative"><img src="https://intranet.upap.edu.py/assets/images/logo.png" alt="UPAP"><button type="button" class="btn-close d-lg-none" id="closeSide" aria-label="Cerrar menú"></button></div>
+  <div class="side-user d-lg-none"><b id="uName2">Alumno</b><small id="uCi2"></small></div>
   <nav class="nav flex-column">
+  <div class="menu-title">Académico</div>
     <a class="nav-link active" data-v="inicio" href="#inicio"><i class="mdi mdi-view-dashboard-outline"></i>Inicio</a>
     <a class="nav-link" data-v="calificaciones" href="#calificaciones"><i class="mdi mdi-school-outline"></i>Calificaciones</a>
     <a class="nav-link" data-v="asistencia" href="#asistencia"><i class="mdi mdi-calendar-check-outline"></i>Asistencia</a>
     <a class="nav-link" data-v="horario" href="#horario"><i class="mdi mdi-clock-outline"></i>Horario</a>
+    <a class="nav-link" data-v="plan" href="#plan"><i class="mdi mdi-timeline-check-outline"></i>Plan de estudios</a>
+  <div class="menu-title">Trámites</div>
+    <a class="nav-link" data-v="solicitudes" href="#solicitudes"><i class="mdi mdi-file-document-edit-outline"></i>Solicitudes</a>
+    <a class="nav-link" data-v="agenda" href="#agenda"><i class="mdi mdi-calendar-clock-outline"></i>Agendamientos</a>
+  <div class="menu-title">Finanzas</div>
     <a class="nav-link" data-v="cuenta" href="#cuenta"><i class="mdi mdi-cash-multiple"></i>Estado de cuenta</a>
+  <div class="menu-title">Comunicación</div>
     <a class="nav-link" data-v="avisos" href="#avisos"><i class="mdi mdi-bell-outline"></i>Avisos</a>
-    <div class="menu-title">Recursos</div>
+  <div class="menu-title">Mi cuenta</div>
+    <a class="nav-link" data-v="perfil" href="#perfil"><i class="mdi mdi-account-circle-outline"></i>Mi perfil</a>
+  <div class="menu-title">Recursos</div>
     <a class="nav-link" href="https://cicco.org.py/" target="_blank"><i class="mdi mdi-book-open-variant"></i>Bibliotecas virtuales</a>
   </nav>
 </aside>
@@ -54,7 +83,7 @@ main{margin-left:250px;padding:90px 1.5rem 2rem}
   <button class="btn btn-link d-lg-none me-2" id="burger"><i class="mdi mdi-menu fs-3"></i></button>
   
   <!-- SELETOR DE CONVOCATÓRIA (DO 1º AO 10º PERÍODO) -->
-  <div class="d-flex align-items-center gap-2">
+  <div class="d-flex align-items-center gap-2 sel-wrap">
     <span class="fw-semibold d-none d-md-inline">Medicina</span>
     <select id="selectConvocatoria" class="sel-conv">
       <option value="2026.2" selected>2026.2 - 10º Semestre (Actual)</option>
@@ -70,9 +99,9 @@ main{margin-left:250px;padding:90px 1.5rem 2rem}
     </select>
   </div>
 
-  <div class="ms-auto d-flex align-items-center gap-3">
-    <span class="text-end lh-sm"><b id="uName">Alumno</b><br><small id="uCi" class="opacity-75"></small></span>
-    <button class="btn btn-light btn-sm" id="logout"><i class="mdi mdi-logout"></i> Cerrar sesión</button>
+  <div class="ms-auto d-flex align-items-center gap-3 flex-shrink-0">
+    <span class="text-end lh-sm d-none d-lg-block"><b id="uName">Alumno</b><br><small id="uCi" class="opacity-75"></small></span>
+    <button class="btn btn-light btn-sm" id="logout" aria-label="Cerrar sesión"><i class="mdi mdi-logout"></i><span class="d-none d-sm-inline"> Cerrar sesión</span></button>
   </div>
 </header>
 
@@ -97,8 +126,9 @@ main{margin-left:250px;padding:90px 1.5rem 2rem}
         <label class="small">Buscar: <input id="calQ" class="form-control form-control-sm d-inline-block w-auto"></label>
       </div>
       <div class="table-responsive"><table class="table table-hover align-middle mb-2">
-        <thead><tr><th>Materia</th><th>Fecha</th><th>Asistencia</th><th>Nota</th><th>Tipo</th></tr></thead>
+        <thead><tr><th>Materia / Profesor</th><th>Asist.</th><th>1er Parcial</th><th>2º Parcial</th><th>Recuperatorio</th><th>Final Ordinario</th><th>Complementario</th><th>Fecha</th><th>Nota</th><th>Situación</th></tr></thead>
         <tbody id="calBody"></tbody></table></div>
+      <p class="text-muted small mb-2">Escala: 1 (0-59%), 2 (60-70%), 3 (71-80%), 4 (81-90%), 5 (91-100%). Nota final = 40% parciales + 60% final. El recuperatorio reemplaza al parcial con puntaje menor a 60; el complementario reemplaza al final ordinario reprobado.</p>
       <div class="d-flex justify-content-between align-items-center"><small id="calInfo" class="text-muted"></small><div class="btn-group btn-group-sm" id="calPag"></div></div>
     </div></div>
   </section>
@@ -119,14 +149,61 @@ main{margin-left:250px;padding:90px 1.5rem 2rem}
     <div class="card"><div class="card-body"><h5>Estado de cuenta</h5>
       <div class="row g-3 mb-3" id="ctaStats"></div>
       <div class="table-responsive"><table class="table table-hover align-middle">
-        <thead><tr><th>Concepto</th><th>Vencimiento</th><th class="text-end">Importe (Gs.)</th><th>Estado</th></tr></thead>
+        <thead><tr><th>Concepto</th><th>Vencimiento</th><th class="text-end">Importe (Gs.)</th><th>Fecha de pago</th><th>Estado</th></tr></thead>
         <tbody id="ctaBody"></tbody></table></div></div></div>
   </section>
 
   <section id="v-avisos" class="view">
     <div class="card"><div class="card-body"><h5>Avisos y Comunicados</h5><div id="avisosFull"></div></div></div>
   </section>
+
+  <section id="v-solicitudes" class="view"><div class="row g-3">
+    <div class="col-lg-5"><div class="card"><div class="card-body">
+      <h5>Nueva solicitud</h5>
+      <div class="mb-2"><label class="form-label" for="solTipo">Tipo de solicitud</label><select id="solTipo" class="form-select"></select></div>
+      <div class="small text-muted mb-2" id="solInfo"></div>
+      <div class="mb-2" id="solMatBox"><label class="form-label" for="solMat">Materia</label><select id="solMat" class="form-select"></select></div>
+      <div class="mb-3"><label class="form-label" for="solObs">Motivo u observación</label><textarea id="solObs" rows="3" class="form-control"></textarea></div>
+      <div id="solMsg"></div>
+      <button class="btn btn-upap w-100" id="solEnviar">Enviar solicitud</button>
+    </div></div></div>
+    <div class="col-lg-7"><div class="card"><div class="card-body">
+      <h5>Mis solicitudes</h5><p class="text-muted small">Tocá una solicitud para ver el detalle.</p>
+      <div class="table-responsive"><table class="table table-hover align-middle mb-0"><thead><tr><th>N°</th><th>Fecha</th><th>Tipo</th><th>Dependencia</th><th>Estado</th></tr></thead><tbody id="solBody"></tbody></table></div>
+    </div></div></div>
+  </div></section>
+
+  <section id="v-agenda" class="view"><div class="row g-3">
+    <div class="col-lg-5"><div class="card"><div class="card-body">
+      <h5>Agendar atención</h5>
+      <div class="mb-2"><label class="form-label" for="agDep">Dependencia</label><select id="agDep" class="form-select"></select></div>
+      <div class="mb-2"><label class="form-label" for="agMot">Motivo</label><select id="agMot" class="form-select"></select></div>
+      <div class="row g-2 mb-2"><div class="col-6"><label class="form-label" for="agFecha">Fecha</label><input type="date" id="agFecha" class="form-control"></div>
+        <div class="col-6"><label class="form-label" for="agHora">Horario</label><select id="agHora" class="form-select"></select></div></div>
+      <div class="mb-2"><label class="form-label" for="agMod">Modalidad</label><select id="agMod" class="form-select"><option>Presencial</option><option>Virtual (videollamada)</option></select></div>
+      <div class="mb-3"><label class="form-label" for="agObs">Observación (opcional)</label><textarea id="agObs" rows="2" class="form-control"></textarea></div>
+      <div id="agMsg"></div>
+      <button class="btn btn-upap w-100" id="agBtn">Confirmar agendamiento</button>
+    </div></div></div>
+    <div class="col-lg-7"><div class="card"><div class="card-body">
+      <h5>Mis agendamientos</h5>
+      <div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th>Fecha</th><th>Hora</th><th>Dependencia</th><th>Motivo</th><th>Estado</th><th></th></tr></thead><tbody id="agBody"></tbody></table></div>
+    </div></div></div>
+  </div></section>
+
+  <section id="v-plan" class="view"><h5 class="mb-3">Plan de estudios</h5><div id="planBody"></div></section>
+
+  <section id="v-perfil" class="view"><div class="card"><div class="card-body"><h5>Mi perfil</h5>
+    <div class="table-responsive"><table class="table mb-0"><tbody id="perfilBody"></tbody></table></div></div></div></section>
 </main>
+
+<div class="modal fade" id="msgModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down"><div class="modal-content">
+  <div class="modal-header"><div><h5 class="modal-title" id="msgTitle"></h5><small class="text-muted" id="msgDate"></small></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+  <div class="modal-body"><div id="msgBody" style="white-space:pre-line"></div></div>
+  <div class="modal-footer"><button class="btn btn-upap" data-bs-dismiss="modal">Cerrar</button></div>
+</div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
 /* ---- Sesión ---- */
@@ -143,75 +220,132 @@ const DB = {
     cal: [['Clínica Médica III','2026-09-10',100,5,'Ordinario'],['Clínica Quirúrgica III','2026-09-15',95,4,'Ordinario'],['Pediatría II','2026-09-20',88,5,'Ordinario'],['Oncología II','2026-09-22',92,4,'Ordinario'],['Medicina Tropical','2026-10-02',85,3,'Ordinario']],
     asis: [['Clínica Médica III', 96],['Clínica Quirúrgica III', 91],['Pediatría II', 84],['Oncología II', 88]],
     hor: {'07:00':['Rotación: Clínica Médica','Rotación: Cirugía','Rotación: Pediatría','Rotación: Clínica Médica','Libre'],'10:00':['Clases Teóricas','Oncología II','Medicina Tropical','Oftalmología II','Seminario'],'14:00':['Libre','Práctica Hospitalaria','Libre','Práctica Hospitalaria','Libre']},
-    cta: [['Matrícula 5º Año','2026-08-05',1500000,'Pagado'],['Cuota 1','2026-09-10',2000000,'Pagado'],['Cuota 2','2026-10-10',2000000,'Pendiente']],
-    avisos: [['Inscripción para el Internado (6º Año)','2026-10-15','El período de solicitud comienza la próxima semana.'],['Vencimiento de Cuota 2','2026-10-10','Recordá regularizar tu pago.']]
+    avisos: [['Inscripción para el Internado (6º Año)','2026-10-15','El período de solicitud comienza la próxima semana.',`Estimado/a alumno/a:
+
+Se comunica que el período de solicitud de inscripción para el Internado Rotatorio (6º Año) comenzará el lunes 19 de octubre y se extenderá hasta el 30 de octubre de 2026.
+
+Requisitos:
+- Tener aprobadas todas las materias hasta el 5º Año.
+- Estar al día con la Cuenta Corriente.
+- Iniciar la solicitud desde el módulo Solicitudes o presentar la ficha firmada en Secretaría Académica.
+
+Los cupos por hospital se asignarán según el promedio general acumulado. Ante cualquier duda, podés agendar una cita con Secretaría Académica desde el módulo Agendamientos.
+
+Atentamente,
+Secretaría Académica - UPAP`],['Vencimiento de Cuota 10 - Noviembre','2026-11-10','Recordá regularizar tu pago.',`Estimado/a alumno/a:
+
+Te recordamos que la Cuota 10 (Noviembre) venció el 10 de noviembre de 2026. Para poder rendir los exámenes finales es necesario estar al día con la Cuenta Corriente.
+
+Podés consultar tu saldo en Estado de cuenta. Si necesitás un plan de pago o fraccionamiento, iniciá una solicitud a Cuenta Corriente o agendá una atención desde Agendamientos.
+
+Atentamente,
+Cuenta Corriente - UPAP`]]
   },
   '2026.1': { // 9º Semestre
     cal: [['Fisiopatología Médica IV','2026-03-10',100,4,'Ordinario'],['Radiología e Imagen II','2026-04-15',95,5,'Ordinario'],['Anatomía Patológica III','2026-05-05',90,3,'Ordinario'],['Salud Materno Infantil III','2026-06-20',85,4,'Ordinario']],
     asis: [['Fisiopatología IV', 95],['Radiología II', 100],['Anatomía Patológica III', 82],['Salud Materno Infantil III', 78]],
     hor: {'08:00':['Fisiopatología IV','Radiología II','Anatomía Patológica','Fisiopatología IV','Libre'],'11:00':['Salud Materno Infantil','','Salud Materno Infantil','','Patología Quirúrgica']},
-    cta: [['Matrícula 5º Año','2026-02-05',1500000,'Pagado'],['Cuota 1','2026-03-10',2000000,'Pagado'],['Cuota 2','2026-04-10',2000000,'Pagado']],
     avisos: [['Cierre de Actas 2026.1','2026-06-30','Las notas finales ya fueron cargadas.'],['Exámenes Finales','2026-06-25','Consultar calendario.']]
   },
   '2025.2': { // 8º Semestre
     cal: [['Farmacología III','2025-09-10',100,5,'Ordinario'],['Fisiopatología Médica I','2025-10-15',95,4,'Ordinario'],['Radiología e Imagen I','2025-11-05',92,5,'Ordinario'],['Anatomía Patológica I','2025-11-10',88,2,'Ordinario'],['Anatomía Patológica I','2025-12-01',88,4,'Extraordinario']],
     asis: [['Farmacología III', 100],['Fisiopatología I', 92],['Radiología I', 90],['Anatomía Patológica I', 85]],
     hor: {'07:00':['Farmacología III','Fisiopatología I','Radiología I','Farmacología III','Libre'],'09:00':['Anatomía Patológica I','','Anatomía Patológica I','','Fisiopatología I']},
-    cta: [['Matrícula 4º Año','2025-07-05',1400000,'Pagado'],['Cuota 1','2025-08-10',1800000,'Pagado'],['Cuota 2','2025-09-10',1800000,'Pagado'],['Cuota 3','2025-10-10',1800000,'Pagado'],['Cuota 4','2025-11-10',1800000,'Pagado']],
     avisos: [['Bienvenidos al 4º Año','2025-07-20','Inicio de clases del nuevo año académico.']]
   },
   '2025.1': { // 7º Semestre
     cal: [['Semiología Médica IV','2025-03-10',100,5,'Ordinario'],['Fisiopatología Médica II','2025-04-15',95,4,'Ordinario'],['Anatomía Patológica II','2025-05-05',92,4,'Ordinario'],['Patología Quirúrgica I','2025-06-10',88,4,'Ordinario']],
     asis: [['Semiología IV', 100],['Fisiopatología II', 92],['Anatomía Patológica II', 90],['Patología Quirúrgica I', 85]],
     hor: {'07:00':['Semiología IV','Fisiopatología II','Anatomía Patológica II','Patología Quirúrgica I','Libre'],'10:00':['','Semiología IV','','Semiología IV','']},
-    cta: [['Matrícula 4º Año','2025-02-05',1400000,'Pagado'],['Cuota 1','2025-03-10',1800000,'Pagado'],['Cuota 2','2025-04-10',1800000,'Pagado'],['Cuota 3','2025-05-10',1800000,'Pagado'],['Cuota 4','2025-06-10',1800000,'Pagado']],
     avisos: [['Inicio de semestre','2025-02-20','Cronograma de evaluaciones disponible.']]
   },
   '2024.2': { // 6º Semestre
     cal: [['Semiología Médica I','2024-09-10',100,5,'Ordinario'],['Farmacología I','2024-10-15',95,4,'Ordinario'],['Radiología General','2024-11-05',92,4,'Ordinario'],['Microbiología IV','2024-11-20',88,4,'Ordinario']],
     asis: [['Semiología I', 98],['Farmacología I', 94],['Radiología General', 88],['Microbiología IV', 80]],
     hor: {'08:00':['Semiología I','Farmacología I','Radiología General','Microbiología IV','Libre'],'11:00':['','Semiología I','','Farmacología I','']},
-    cta: [['Matrícula 3º Año','2024-07-05',1300000,'Pagado'],['Cuota 1','2024-08-10',1700000,'Pagado'],['Cuota 2','2024-09-10',1700000,'Pagado'],['Cuota 3','2024-10-10',1700000,'Pagado']],
     avisos: [['Prácticas Hospitalarias','2024-08-15','Asignación de guardias en el Hospital de Clínicas.']]
   },
   '2024.1': { // 5º Semestre
     cal: [['Fisiología Humana V','2024-03-10',100,4,'Ordinario'],['Bioquímica II','2024-04-15',95,5,'Ordinario'],['Fisioterapia II','2024-05-05',92,4,'Ordinario'],['Historia de la Medicina','2024-06-10',100,5,'Ordinario']],
     asis: [['Fisiología V', 95],['Bioquímica II', 90],['Fisioterapia II', 92],['Historia de la Medicina', 100]],
     hor: {'07:00':['Fisiología V','Bioquímica II','Fisioterapia II','Historia de la Medicina','Libre'],'09:00':['','Fisiología V','','Bioquímica II','']},
-    cta: [['Matrícula 3º Año','2024-02-05',1300000,'Pagado'],['Cuota 1','2024-03-10',1700000,'Pagado'],['Cuota 2','2024-04-10',1700000,'Pagado'],['Cuota 3','2024-05-10',1700000,'Pagado']],
     avisos: [['Bienvenidos al 3º Año','2024-02-20','Inicio de clases.']]
   },
   '2023.2': { // 4º Semestre
     cal: [['Microbiología IV','2023-09-10',100,4,'Ordinario'],['Fisiología Humana IV','2023-10-15',95,5,'Ordinario'],['Biofísica II','2023-11-05',92,4,'Ordinario'],['Medicina Familiar','2023-11-20',88,4,'Ordinario']],
     asis: [['Microbiología IV', 100],['Fisiología IV', 92],['Biofísica II', 88],['Medicina Familiar', 95]],
     hor: {'08:00':['Microbiología IV','Fisiología IV','Biofísica II','Medicina Familiar','Libre'],'10:00':['','Microbiología IV','','Fisiología IV','']},
-    cta: [['Matrícula 2º Año','2023-07-05',1200000,'Pagado'],['Cuota 1','2023-08-10',1600000,'Pagado'],['Cuota 2','2023-09-10',1600000,'Pagado'],['Cuota 3','2023-10-10',1600000,'Pagado']],
     avisos: [['Actualización de datos','2023-08-01','Completar formulario de salud.']]
   },
   '2023.1': { // 3º Semestre
     cal: [['Anatomía Humana III','2023-03-10',100,5,'Ordinario'],['Histología IV','2023-04-15',95,4,'Ordinario'],['Bioquímica I','2023-05-05',92,4,'Ordinario'],['Fisiología Humana I','2023-06-10',88,3,'Ordinario']],
     asis: [['Anatomía III', 95],['Histología IV', 90],['Bioquímica I', 85],['Fisiología I', 88]],
     hor: {'07:00':['Anatomía III','Histología IV','Bioquímica I','Fisiología I','Libre'],'09:00':['','Anatomía III','','Histología IV','']},
-    cta: [['Matrícula 2º Año','2023-02-05',1200000,'Pagado'],['Cuota 1','2023-03-10',1600000,'Pagado'],['Cuota 2','2023-04-10',1600000,'Pagado'],['Cuota 3','2023-05-10',1600000,'Pagado']],
     avisos: [['Inicio del 2º Año','2023-02-20','Bienvenidos.']]
   },
   '2022.2': { // 2º Semestre
     cal: [['Anatomía Humana II','2022-09-10',100,4,'Ordinario'],['Histología II','2022-10-15',95,5,'Ordinario'],['Química General II','2022-11-05',92,4,'Ordinario'],['Psicología General','2022-11-20',100,5,'Ordinario']],
     asis: [['Anatomía II', 90],['Histología II', 95],['Química II', 88],['Psicología', 100]],
     hor: {'08:00':['Anatomía II','Histología II','Química II','Psicología','Libre'],'10:00':['','Anatomía II','','Histología II','']},
-    cta: [['Matrícula 1º Año','2022-07-05',1000000,'Pagado'],['Cuota 1','2022-08-10',1500000,'Pagado'],['Cuota 2','2022-09-10',1500000,'Pagado'],['Cuota 3','2022-10-10',1500000,'Pagado']],
     avisos: [['Resultados Primer Semestre','2022-07-15','Consultar calificaciones.']]
   },
   '2022.1': { // 1º Semestre
     cal: [['Anatomía Humana I','2022-03-10',100,4,'Ordinario'],['Histología I','2022-04-15',95,4,'Ordinario'],['Química General I','2022-05-05',92,3,'Ordinario'],['Metodología de la Investigación','2022-06-10',100,5,'Ordinario']],
     asis: [['Anatomía I', 95],['Histología I', 90],['Química I', 80],['Metodología', 100]],
     hor: {'07:00':['Anatomía I','Histología I','Química I','Metodología','Libre'],'09:00':['','Anatomía I','','Histología I','']},
-    cta: [['Matrícula 1º Año','2022-02-05',1000000,'Pagado'],['Cuota 1','2022-03-10',1500000,'Pagado'],['Cuota 2','2022-04-10',1500000,'Pagado'],['Cuota 3','2022-05-10',1500000,'Pagado']],
     avisos: [['Bienvenidos a la UPAP','2022-02-20','Inicio de clases para la carrera de Medicina.']]
   }
 };
 
-let currentData = DB['2026.2']; // Começa no período atual
+/* ---- Profesores (ficticios) ---- */
+const PROFS=['Dr. Carlos Benítez','Dra. Liz Giménez','Dr. Marcelo Ortiz','Dra. Patricia Duarte','Dr. Ramón Acosta','Dra. Natalia Villalba','Dr. Gustavo Báez','Dra. Silvia Cabral','Dr. Alberto Fleitas','Dra. Rocío Martínez','Dr. Fabio Romero','Dra. Mirta Samudio','Dr. Julio Cáceres','Dra. Andrea Ferreira','Dr. Héctor Servín','Dra. Lorena Insfrán'];
+const hash=s=>{let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0};
+const rng=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const profDe=m=>PROFS[hash(m.replace(/\s+(I{1,3}|IV|V|VI)$/,''))%PROFS.length];
+
+/* ---- Notas: parciales, recuperatorio, final ordinario, complementario ---- */
+const nota=p=>p<60?1:p<71?2:p<81?3:p<91?4:5;
+const MID={1:52,2:65,3:76,4:86,5:95};
+const cl=x=>Math.max(0,Math.min(100,Math.round(x)));
+function buildRows(per,cal,asis){
+  const by={}; cal.forEach(r=>(by[r[0]]=by[r[0]]||[]).push(r));
+  return Object.entries(by).map(([mat,rs],i)=>{
+    const ord=rs.find(r=>r[4]==='Ordinario'), ext=rs.find(r=>r[4]!=='Ordinario');
+    const N=ext?ext[3]:ord[3], R=rng(hash(per+mat)), jit=k=>(R()*2-1)*k;
+    const T=ext?MID[1]:MID[N]+jit(2), avgP=T+jit(6);
+    let p=[cl(avgP+jit(7))]; p[1]=cl(2*avgP-p[0]);
+    let rec=null;
+    if(ext||(N<=4&&R()<(N<=3?.6:.3))){
+      const w=R()<.5?0:1; p[w]=cl(40+R()*18); p[1-w]=cl(Math.max(T,62)+R()*8);
+      rec=[w+1,cl(60+R()*8)];
+    }
+    const pe=[...p]; if(rec) pe[rec[0]-1]=Math.max(p[rec[0]-1],rec[1]);
+    const fo=cl((T-.4*(pe[0]+pe[1])/2)/.6);
+    const pf=Math.round(.4*(pe[0]+pe[1])/2+.6*fo);
+    const compl=ext?cl(MID[ext[3]]+jit(2)):null;
+    const fin=ext?compl:pf;
+    return {m:mat,prof:profDe(mat),asist:(asis[i]?asis[i][1]:rs[0][2]),p1:p[0],p2:p[1],rec,fo,compl,
+            fecha:(ext||ord)[1],nota:nota(fin)};
+  });
+}
+
+/* ---- Pagos: matrícula en enero, cuota todos los meses (feb-dic) ---- */
+const MATR=[1000000,1200000,1300000,1400000,1500000], CUOTA=[1500000,1600000,1700000,1800000,2000000];
+const MES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+function buildCta(per){
+  const [y,sem]=per.split('.').map(Number), a=y-2022, R=rng(hash('cta'+per)), out=[], pad=n=>String(n).padStart(2,'0');
+  const add=(c,mes,imp)=>{
+    const v=`${y}-${pad(mes)}-${mes===1?'05':'10'}`, paid=v<='2026-10-31'; let pago=null;
+    if(paid){const d=new Date(v+'T12:00:00');d.setDate(d.getDate()+Math.floor(R()*8)-2);pago=d.toISOString().slice(0,10)}
+    out.push([c,v,imp,paid?'Pagado':'Pendiente',pago]);
+  };
+  if(sem===1){add(`Matrícula ${a+1}º Año`,1,MATR[a]);for(let m=2;m<=6;m++)add(`Cuota ${m-1} - ${MES[m-1]}`,m,CUOTA[a]);}
+  else for(let m=7;m<=12;m++)add(`Cuota ${m-1} - ${MES[m-1]}`,m,CUOTA[a]);
+  return out;
+}
+Object.entries(DB).forEach(([per,d])=>{d.rows=buildRows(per,d.cal,d.asis);d.cta=buildCta(per);});
+
+let currentData = DB['2026.2'];
 const fmt=n=>n.toLocaleString('es-PY'), fd=d=>d.split('-').reverse().join('/');
 const $=id=>document.getElementById(id);
 
@@ -220,56 +354,159 @@ function show(v){
   if(!document.getElementById('v-'+v)) v='inicio';
   document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id==='v-'+v));
   document.querySelectorAll('#side a[data-v]').forEach(a=>a.classList.toggle('active',a.dataset.v===v));
-  $('side').classList.remove('open');
+  setSide(false);
 }
 window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
-$('burger').onclick=()=>$('side').classList.toggle('open');
+const setSide=o=>{$('side').classList.toggle('open',o);document.body.classList.toggle('side-open',o)};
+$('burger').onclick=()=>setSide(true);
+$('closeSide').onclick=$('backdrop').onclick=()=>setSide(false);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')setSide(false)});
 
 /* ---- Renderizações Dinâmicas ---- */
 let page=1;
+const dash='<span class="text-muted">-</span>';
+const pc=v=>v==null?dash:`<span class="${v<60?'text-danger':''}">${v}</span>`;
+const pn=v=>v==null?dash:`${pc(v)} <small class="text-muted">(${nota(v)})</small>`;
 function renderCal(){
   const q=$('calQ').value.toLowerCase(), len=+$('calLen').value;
-  const rows=currentData.cal.filter(r=>r[0].toLowerCase().includes(q));
+  const rows=currentData.rows.filter(r=>(r.m+' '+r.prof).toLowerCase().includes(q));
   const pages=Math.max(1,Math.ceil(rows.length/len)); page=Math.min(page,pages);
   const s=(page-1)*len, cur=rows.slice(s,s+len);
-  $('calBody').innerHTML=cur.map(r=>`<tr><td>${r[0]}</td><td>${fd(r[1])}</td><td>${r[2]}%</td>
-    <td><span class="badge ${r[3]>=2?'badge-ok':'badge-no'}">${r[3]}</span></td><td>${r[4]}</td></tr>`).join('')
-    ||'<tr><td colspan="5" class="text-center text-muted">Sin resultados</td></tr>';
+  $('calBody').innerHTML=cur.map(r=>`<tr><td><b>${r.m}</b><br><small class="text-muted">${r.prof}</small></td><td>${r.asist}%</td>
+    <td>${pc(r.p1)}</td><td>${pc(r.p2)}</td><td>${r.rec?pc(r.rec[1])+` <small class="text-muted">(P${r.rec[0]})</small>`:dash}</td>
+    <td>${pn(r.fo)}</td><td>${pn(r.compl)}</td><td>${fd(r.fecha)}</td>
+    <td><span class="badge ${r.nota>=2?'badge-ok':'badge-no'}">${r.nota}</span></td>
+    <td><span class="badge ${r.nota>=2?'badge-ok':'badge-no'}">${r.nota>=2?'Aprobado':'Reprobado'}</span></td></tr>`).join('')
+    ||'<tr><td colspan="10" class="text-center text-muted">Sin resultados</td></tr>';
   $('calInfo').textContent=`Mostrando ${rows.length?s+1:0} a ${s+cur.length} de ${rows.length} registros`;
   $('calPag').innerHTML=Array.from({length:pages},(_,i)=>`<button class="btn ${i+1===page?'btn-upap':'btn-outline-secondary'}" data-p="${i+1}">${i+1}</button>`).join('');
   $('calPag').querySelectorAll('button').forEach(b=>b.onclick=()=>{page=+b.dataset.p;renderCal()});
 }
 
 function renderAll() {
-  // 1. Stats e Início
-  const prom = currentData.cal.length ? (currentData.cal.reduce((a,r)=>a+r[3],0)/currentData.cal.length).toFixed(1) : '0.0';
-  const asi = currentData.asis.length ? Math.round(currentData.asis.reduce((a,r)=>a+r[1],0)/currentData.asis.length) : 0;
-  const pend = currentData.cta.filter(r=>r[3]==='Pendiente').reduce((a,r)=>a+r[2],0);
-  
-  const st=(i,n,l)=>`<div class="col-6 col-lg-3"><div class="card stat"><div class="card-body d-flex align-items-center gap-3"><i class="mdi ${i}"></i><div><div class="n">${n}</div><div class="text-muted small">${l}</div></div></div></div></div>`;
-  $('stats').innerHTML=st('mdi-star-outline',prom,'Promedio')+st('mdi-calendar-check-outline',asi+'%','Asistencia')+st('mdi-book-education-outline',currentData.asis.length,'Materias')+st('mdi-cash',fmt(pend),'Saldo pendiente');
-  
-  $('hoy').innerHTML=Object.entries(currentData.hor).map(([h,d])=>d[0]&&d[0]!=='Libre'?`<div class="d-flex gap-3 py-2 border-bottom"><b class="tt">${h}</b><span>${d[0]}</span></div>`:'').join('');
-  $('avisosMini').innerHTML=currentData.avisos.slice(0,2).map(a=>`<div class="mb-2"><b>${a[0]}</b><br><small class="text-muted">${fd(a[1])}</small></div>`).join('');
-  
-  // 2. Asistencia
-  $('asis').innerHTML=currentData.asis.map(([m,p])=>`<div class="mb-3"><div class="d-flex justify-content-between"><span>${m}</span><b>${p}%</b></div>
-    <div class="progress" style="height:8px"><div class="progress-bar ${p<75?'bg-danger':'bg-success'}" style="width:${p}%"></div></div></div>`).join('');
-  
-  // 3. Horário
-  $('horBody').innerHTML=Object.entries(currentData.hor).map(([h,d])=>`<tr><th>${h}</th>${d.map(x=>`<td>${x||'<span class="text-muted">-</span>'}</td>`).join('')}</tr>`).join('');
-  
-  // 4. Conta
-  const tot=currentData.cta.reduce((a,r)=>a+r[2],0), pag=tot-pend;
-  $('ctaStats').innerHTML=st('mdi-cash-check',fmt(pag),'Pagado (Gs.)')+st('mdi-cash-clock',fmt(pend),'Pendiente (Gs.)');
-  $('ctaBody').innerHTML=currentData.cta.map(r=>`<tr><td>${r[0]}</td><td>${fd(r[1])}</td><td class="text-end">${fmt(r[2])}</td>
-    <td><span class="badge ${r[3]==='Pagado'?'badge-ok':'badge-wait'}">${r[3]}</span></td></tr>`).join('');
-    
-  // 5. Avisos
-  $('avisosFull').innerHTML=currentData.avisos.map(a=>`<div class="border-bottom py-3"><b>${a[0]}</b> <small class="text-muted ms-2">${fd(a[1])}</small><p class="mb-0">${a[2]}</p></div>`).join('');
-  
-  // 6. Calificações
-  renderCal();
+  const D=currentData, n=D.rows.length, hoy=new Date().toISOString().slice(0,10);
+  const prom=n?(D.rows.reduce((a,r)=>a+r.nota,0)/n).toFixed(1):'0.0';
+  const asi=n?Math.round(D.rows.reduce((a,r)=>a+r.asist,0)/n):0;
+  const pend=D.cta.filter(r=>r[3]==='Pendiente').reduce((a,r)=>a+r[2],0);
+  const st=(i,v,l)=>`<div class="col-6 col-lg-3"><div class="card stat"><div class="card-body d-flex align-items-center gap-3"><i class="mdi ${i}"></i><div><div class="n">${v}</div><div class="text-muted small">${l}</div></div></div></div></div>`;
+  $('stats').innerHTML=st('mdi-star-outline',prom,'Promedio')+st('mdi-calendar-check-outline',asi+'%','Asistencia')+st('mdi-book-education-outline',n,'Materias')+st('mdi-cash',fmt(pend),'Saldo pendiente');
+  $('hoy').innerHTML=Object.entries(D.hor).map(([h,d])=>d[0]&&d[0]!=='Libre'?`<div class="d-flex gap-3 py-2 border-bottom"><b class="tt">${h}</b><span>${d[0]}</span></div>`:'').join('');
+  $('avisosMini').innerHTML=D.avisos.slice(0,2).map((a,i)=>`<a href="#" data-av="${i}" class="d-block mb-2 text-reset"><b>${a[0]}</b><br><small class="text-muted">${fd(a[1])} - Leer mensaje</small></a>`).join('');
+  $('asis').innerHTML=D.rows.map(r=>`<div class="mb-3"><div class="d-flex justify-content-between"><span>${r.m}<small class="text-muted d-block">${r.prof}</small></span><b>${r.asist}%</b></div>
+    <div class="progress" style="height:8px"><div class="progress-bar ${r.asist<75?'bg-danger':'bg-success'}" style="width:${r.asist}%"></div></div></div>`).join('');
+  $('horBody').innerHTML=Object.entries(D.hor).map(([h,d])=>`<tr><th>${h}</th>${d.map(x=>`<td>${x||'<span class="text-muted">-</span>'}</td>`).join('')}</tr>`).join('');
+  const tot=D.cta.reduce((a,r)=>a+r[2],0);
+  $('ctaStats').innerHTML=st('mdi-cash-check',fmt(tot-pend),'Pagado (Gs.)')+st('mdi-cash-clock',fmt(pend),'Pendiente (Gs.)');
+  $('ctaBody').innerHTML=D.cta.map(r=>{
+    const venc=r[3]==='Pendiente'&&r[1]<hoy;
+    return `<tr><td>${r[0]}</td><td>${fd(r[1])}</td><td class="text-end">${fmt(r[2])}</td><td>${r[4]?fd(r[4]):dash}</td>
+    <td><span class="badge ${r[3]==='Pagado'?'badge-ok':venc?'badge-no':'badge-wait'}">${venc?'Vencido':r[3]}</span></td></tr>`}).join('');
+  $('avisosFull').innerHTML=`<div class="list-group list-group-flush">${D.avisos.map((a,i)=>`<a href="#" data-av="${i}" class="list-group-item list-group-item-action py-3"><div class="d-flex justify-content-between gap-2"><b>${a[0]}</b><small class="text-muted text-nowrap">${fd(a[1])}</small></div><div class="text-muted">${a[2]}</div></a>`).join('')}</div>`;
+  renderCal(); renderSolForm();
+}
+
+/* ---- Utilidades ---- */
+const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const today=()=>new Date().toISOString().slice(0,10);
+const stat=(i,v,l)=>`<div class="col-6 col-lg-3"><div class="card stat"><div class="card-body d-flex align-items-center gap-3"><i class="mdi ${i}"></i><div><div class="n">${v}</div><div class="text-muted small">${l}</div></div></div></div></div>`;
+
+/* ---- Modal de mensaje (avisos, solicitudes) ---- */
+function openMsg(title,fecha,body){
+  $('msgTitle').textContent=title;$('msgDate').textContent=fecha;$('msgBody').textContent=body;
+  bootstrap.Modal.getOrCreateInstance($('msgModal')).show();
+}
+const avisoBody=a=>a[3]||`Estimado/a alumno/a:\n\n${a[2]}\n\nPara más información, comunicate con Secretaría Académica o iniciá una solicitud desde el módulo Solicitudes.\n\nAtentamente,\nSecretaría Académica - UPAP`;
+
+/* ---- Solicitudes ---- */
+const TIPOS=[['Constancia de alumno regular','Secretaría Académica','24 hs hábiles',0],['Certificado de estudios','Secretaría Académica','5 días hábiles',0],
+['Certificado de calificaciones','Secretaría Académica','3 días hábiles',0],['Programa de estudio de una materia','Secretaría Académica','3 días hábiles',1],
+['Inscripción a examen (final, complementario o extraordinario)','Secretaría Académica','Hasta 48 hs antes del examen',1],['Baja o retiro de materia','Secretaría Académica','5 días hábiles',1],
+['Reserva de matrícula (congelamiento)','Secretaría Académica','10 días hábiles',0],['Actualización de datos personales','Secretaría Académica','3 días hábiles',0],
+['Revisión de examen o nota','Coordinación de Carrera','5 días hábiles',1],['Cambio de turno o sección','Coordinación de Carrera','5 días hábiles',0],
+['Equivalencia o convalidación de materias','Coordinación de Carrera','15 días hábiles',0],['Justificación de inasistencia','Atención al Estudiante (ATE)','3 días hábiles',1],
+['Beca o exoneración de aranceles','Atención al Estudiante (ATE)','15 días hábiles',0],['Duplicado de carnet estudiantil','Atención al Estudiante (ATE)','5 días hábiles',0],
+['Constancia de pagos y aranceles','Cuenta Corriente','24 hs hábiles',0],['Plan de pago o fraccionamiento de deuda','Cuenta Corriente','5 días hábiles',0]];
+let SOL=store.get('upap_sol',[
+ {n:'2026-0388',tipo:'Constancia de alumno regular',dep:'Secretaría Académica',plazo:'24 hs hábiles',fecha:'2026-09-03',estado:'Entregada',obs:'Para presentar en el trabajo.'},
+ {n:'2026-0402',tipo:'Certificado de calificaciones',dep:'Secretaría Académica',plazo:'3 días hábiles',fecha:'2026-10-14',estado:'En proceso',obs:''},
+ {n:'2026-0409',tipo:'Justificación de inasistencia',dep:'Atención al Estudiante (ATE)',plazo:'3 días hábiles',fecha:'2026-11-05',estado:'Rechazada',obs:'Falta el certificado médico adjunto.'}]);
+const EST={Pendiente:'badge-wait','En proceso':'badge-info',Entregada:'badge-ok',Aprobada:'badge-ok',Rechazada:'badge-no'};
+function renderSolForm(){
+  const sel=$('solTipo').value;
+  if(!$('solTipo').options.length) $('solTipo').innerHTML=TIPOS.map((t,i)=>`<option value="${i}">${t[0]}</option>`).join('');
+  $('solTipo').value=sel||'0';
+  $('solMat').innerHTML=currentData.rows.map(r=>`<option>${r.m}</option>`).join('');
+  solInfo();
+}
+function solInfo(){const t=TIPOS[+$('solTipo').value];$('solInfo').textContent=`Se tramita en ${t[1]}. Plazo estimado: ${t[2]}.`;$('solMatBox').style.display=t[3]?'':'none';}
+function renderSol(){
+  $('solBody').innerHTML=SOL.map((x,i)=>`<tr data-sol="${i}"><td>${x.n}</td><td>${fd(x.fecha)}</td><td>${esc(x.tipo)}</td><td>${x.dep}</td><td><span class="badge ${EST[x.estado]}">${x.estado}</span></td></tr>`).join('');
+}
+
+/* ---- Agendamientos ---- */
+const DEP={'Secretaría Académica':['Retiro de documentos','Consulta sobre inscripción o matrícula','Consulta sobre calificaciones o actas','Trámite de certificados'],
+'Atención al Estudiante (ATE)':['Orientación y apoyo estudiantil','Becas y beneficios','Apoyo psicopedagógico','Reclamos y sugerencias'],
+'Cuenta Corriente':['Consulta de saldo y cuotas','Plan de pago o fraccionamiento','Comprobantes y facturas','Regularización de deuda'],
+'Coordinación de Carrera':['Orientación académica','Revisión de examen','Equivalencias y convalidaciones','Internado y prácticas']};
+const SLOTS=[];for(let h=8;h<17;h++){if(h===12||h===13)continue;['00','30'].forEach(m=>SLOTS.push(String(h).padStart(2,'0')+':'+m))}
+let AG=store.get('upap_ag',[{dep:'Secretaría Académica',mot:'Retiro de documentos',fecha:'2026-10-20',hora:'10:00',mod:'Presencial',estado:'Realizado'}]);
+const EAG={Confirmado:'badge-info',Realizado:'badge-ok',Cancelado:'badge-no'};
+function fillHoras(){
+  const f=$('agFecha').value,dep=$('agDep').value,d=f?new Date(f+'T12:00:00').getDay():null;
+  if(!f||d===0||d===6){$('agHora').innerHTML=`<option value="">${f?'Solo días hábiles':'Elegí una fecha'}</option>`;return;}
+  $('agHora').innerHTML=SLOTS.map(h=>{const busy=hash(dep+f+h)%4===0||AG.some(a=>a.estado==='Confirmado'&&a.dep===dep&&a.fecha===f&&a.hora===h);
+    return `<option value="${h}"${busy?' disabled':''}>${h}${busy?' (ocupado)':''}</option>`}).join('');
+}
+function renderAg(){
+  const rows=AG.map((a,i)=>({...a,i})).sort((x,y)=>(y.fecha+y.hora).localeCompare(x.fecha+x.hora));
+  $('agBody').innerHTML=rows.map(a=>`<tr><td>${fd(a.fecha)}</td><td>${a.hora}</td><td>${a.dep}<small class="text-muted d-block">${a.mod}</small></td><td>${esc(a.mot)}</td>
+    <td><span class="badge ${EAG[a.estado]}">${a.estado}</span></td>
+    <td>${a.estado==='Confirmado'&&a.fecha>=today()?`<button class="btn btn-sm btn-outline-danger" data-cancel="${a.i}">Cancelar</button>`:''}</td></tr>`).join('')
+    ||'<tr><td colspan="6" class="text-center text-muted">Todavía no agendaste ninguna atención.</td></tr>';
+}
+
+/* ---- Plan de estudios y perfil ---- */
+function renderPlan(){
+  let ap=0,tot=0,sum=0;
+  const cards=Object.keys(DB).sort().map((p,i)=>{const rs=DB[p].rows;rs.forEach(r=>{tot++;sum+=r.nota;if(r.nota>=2)ap++});
+    return `<div class="card mb-3"><div class="card-body"><h6>${i+1}º Semestre <small class="text-muted">(${p})</small></h6><div class="table-responsive"><table class="table table-sm mb-0"><tbody>${
+      rs.map(r=>`<tr><td>${r.m}<small class="text-muted d-block">${r.prof}</small></td><td class="text-end"><span class="badge ${r.nota>=2?'badge-ok':'badge-no'}">${r.nota}</span></td></tr>`).join('')}</tbody></table></div></div></div>`}).join('');
+  $('planBody').innerHTML=`<div class="row g-3 mb-3">${stat('mdi-check-decagram-outline',ap+'/'+tot,'Materias aprobadas')+stat('mdi-star-outline',(sum/tot).toFixed(1),'Promedio acumulado')}</div>`+cards;
+}
+function renderPerfil(ci){
+  const f=[['Nombre y apellido','Alumno de Prueba'],['N° de documento',ci],['Carrera','Medicina'],['Sede','Asunción'],['Año de ingreso','2022'],['Situación','Alumno regular'],['Correo institucional',ci+'@upap.edu.py'],['Teléfono','(0981) 000-000']];
+  $('perfilBody').innerHTML=f.map(x=>`<tr><th class="text-muted fw-normal" style="width:40%">${x[0]}</th><td>${esc(x[1])}</td></tr>`).join('');
+}
+
+function initExtra(ci){
+  renderPlan();renderPerfil(ci);renderSol();
+  $('agDep').innerHTML=Object.keys(DEP).map(d=>`<option>${d}</option>`).join('');
+  const motivos=()=>{$('agMot').innerHTML=DEP[$('agDep').value].map(m=>`<option>${m}</option>`).join('');fillHoras()};
+  $('agDep').onchange=motivos;$('agFecha').onchange=fillHoras;motivos();
+  $('agFecha').min=new Date(Date.now()+864e5).toISOString().slice(0,10);$('agFecha').max=new Date(Date.now()+60*864e5).toISOString().slice(0,10);
+  renderAg();
+  $('solTipo').onchange=solInfo;
+  $('solEnviar').onclick=()=>{
+    const t=TIPOS[+$('solTipo').value];
+    const obs=(t[3]?'Materia: '+$('solMat').value+'. ':'')+$('solObs').value.trim();
+    const n=new Date().getFullYear()+'-'+String(409+SOL.length).padStart(4,'0');
+    SOL.unshift({n,tipo:t[0],dep:t[1],plazo:t[2],fecha:today(),estado:'Pendiente',obs});
+    store.set('upap_sol',SOL);$('solObs').value='';renderSol();
+    $('solMsg').innerHTML=`<div class="alert alert-success py-2 small">Solicitud N° ${n} enviada a ${t[1]}.</div>`;
+  };
+  $('agBtn').onclick=()=>{
+    const f=$('agFecha').value,h=$('agHora').value;
+    if(!f||!h){$('agMsg').innerHTML='<div class="alert alert-warning py-2 small">Elegí una fecha hábil y un horario disponible.</div>';return;}
+    AG.push({dep:$('agDep').value,mot:$('agMot').value,fecha:f,hora:h,mod:$('agMod').value,estado:'Confirmado'});
+    store.set('upap_ag',AG);renderAg();fillHoras();
+    $('agMsg').innerHTML=`<div class="alert alert-success py-2 small">Agendamiento confirmado para el ${fd(f)} a las ${h}.</div>`;
+  };
+  document.addEventListener('click',e=>{
+    const a=e.target.closest('[data-av]');if(a){e.preventDefault();const x=currentData.avisos[+a.dataset.av];openMsg(x[0],fd(x[1]),avisoBody(x));return;}
+    const s=e.target.closest('[data-sol]');if(s){const x=SOL[+s.dataset.sol];openMsg(x.tipo,fd(x.fecha),`Solicitud N° ${x.n}\nDependencia: ${x.dep}\nEstado: ${x.estado}\nPlazo estimado: ${x.plazo}\n\nObservación:\n${x.obs||'Sin observaciones.'}`);return;}
+    const c=e.target.closest('[data-cancel]');if(c){AG[+c.dataset.cancel].estado='Cancelado';store.set('upap_ag',AG);renderAg();fillHoras();}
+  });
 }
 
 /* ---- Eventos ---- */
@@ -294,9 +531,10 @@ $('selectConvocatoria').onchange = (e) => {
     const {data:{session}}=await sb.auth.getSession();
     if(!session){location.replace('index.html');return;}
     const ci=(session.user.email||'').split('@')[0];
-    $('uCi').textContent='CI '+ci; $('uName').textContent='Alumno '+ci;
+    $('uCi').textContent='CI '+ci; $('uName').textContent='Alumno '+ci; $('uCi2').textContent='CI '+ci; $('uName2').textContent='Alumno '+ci;
     document.querySelectorAll('.uFirst').forEach(e=>e.textContent='alumno/a');
     
+    initExtra(ci);
     renderAll();
     show(location.hash.slice(1));
   }catch(e){location.replace('index.html');}
