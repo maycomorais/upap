@@ -427,10 +427,7 @@ const TIPOS=[['Constancia de alumno regular','Secretaría Académica','24 hs há
 ['Equivalencia o convalidación de materias','Coordinación de Carrera','15 días hábiles',0],['Justificación de inasistencia','Atención al Estudiante (ATE)','3 días hábiles',1],
 ['Beca o exoneración de aranceles','Atención al Estudiante (ATE)','15 días hábiles',0],['Duplicado de carnet estudiantil','Atención al Estudiante (ATE)','5 días hábiles',0],
 ['Constancia de pagos y aranceles','Cuenta Corriente','24 hs hábiles',0],['Plan de pago o fraccionamiento de deuda','Cuenta Corriente','5 días hábiles',0]];
-let SOL=store.get('upap_sol',[
- {n:'2026-0388',tipo:'Constancia de alumno regular',dep:'Secretaría Académica',plazo:'24 hs hábiles',fecha:'2026-09-03',estado:'Entregada',obs:'Para presentar en el trabajo.'},
- {n:'2026-0402',tipo:'Certificado de calificaciones',dep:'Secretaría Académica',plazo:'3 días hábiles',fecha:'2026-10-14',estado:'En proceso',obs:''},
- {n:'2026-0409',tipo:'Justificación de inasistencia',dep:'Atención al Estudiante (ATE)',plazo:'3 días hábiles',fecha:'2026-11-05',estado:'Rechazada',obs:'Falta el certificado médico adjunto.'}]);
+let SOL=[];
 const EST={Pendiente:'badge-wait','En proceso':'badge-info',Entregada:'badge-ok',Aprobada:'badge-ok',Rechazada:'badge-no'};
 function renderSolForm(){
   const sel=$('solTipo').value;
@@ -440,8 +437,15 @@ function renderSolForm(){
   solInfo();
 }
 function solInfo(){const t=TIPOS[+$('solTipo').value];$('solInfo').textContent=`Se tramita en ${t[1]}. Plazo estimado: ${t[2]}.`;$('solMatBox').style.display=t[3]?'':'none';}
+const nro=x=>new Date(x.created_at).getFullYear()+'-'+String(x.id).padStart(4,'0');
+const fail=(el,e)=>{console.error(e);$(el).innerHTML='<div class="alert alert-danger py-2 small">No se pudo completar la operación: '+esc(e.message||e)+'</div>'};
+async function loadSol(){
+  const {data,error}=await sb.from('solicitudes').select('*').order('created_at',{ascending:false});
+  if(error)return fail('solMsg',error); SOL=data; renderSol();
+}
 function renderSol(){
-  $('solBody').innerHTML=SOL.map((x,i)=>`<tr data-sol="${i}"><td>${x.n}</td><td>${fd(x.fecha)}</td><td>${esc(x.tipo)}</td><td>${x.dep}</td><td><span class="badge ${EST[x.estado]}">${x.estado}</span></td></tr>`).join('');
+  $('solBody').innerHTML=SOL.map((x,i)=>`<tr data-sol="${i}"><td>${nro(x)}</td><td>${fd(x.created_at.slice(0,10))}</td><td>${esc(x.tipo)}</td><td>${x.dependencia}</td><td><span class="badge ${EST[x.estado]}">${x.estado}</span></td></tr>`).join('')
+    ||'<tr><td colspan="5" class="text-center text-muted">Todavía no enviaste ninguna solicitud.</td></tr>';
 }
 
 /* ---- Agendamientos ---- */
@@ -450,19 +454,25 @@ const DEP={'Secretaría Académica':['Retiro de documentos','Consulta sobre insc
 'Cuenta Corriente':['Consulta de saldo y cuotas','Plan de pago o fraccionamiento','Comprobantes y facturas','Regularización de deuda'],
 'Coordinación de Carrera':['Orientación académica','Revisión de examen','Equivalencias y convalidaciones','Internado y prácticas']};
 const SLOTS=[];for(let h=8;h<17;h++){if(h===12||h===13)continue;['00','30'].forEach(m=>SLOTS.push(String(h).padStart(2,'0')+':'+m))}
-let AG=store.get('upap_ag',[{dep:'Secretaría Académica',mot:'Retiro de documentos',fecha:'2026-10-20',hora:'10:00',mod:'Presencial',estado:'Realizado'}]);
-const EAG={Confirmado:'badge-info',Realizado:'badge-ok',Cancelado:'badge-no'};
-function fillHoras(){
+let AG=[];
+const EAG={Confirmado:'badge-info',Realizado:'badge-ok',Ausente:'badge-no',Cancelado:'badge-no'};
+async function fillHoras(){
   const f=$('agFecha').value,dep=$('agDep').value,d=f?new Date(f+'T12:00:00').getDay():null;
   if(!f||d===0||d===6){$('agHora').innerHTML=`<option value="">${f?'Solo días hábiles':'Elegí una fecha'}</option>`;return;}
-  $('agHora').innerHTML=SLOTS.map(h=>{const busy=hash(dep+f+h)%4===0||AG.some(a=>a.estado==='Confirmado'&&a.dep===dep&&a.fecha===f&&a.hora===h);
-    return `<option value="${h}"${busy?' disabled':''}>${h}${busy?' (ocupado)':''}</option>`}).join('');
+  const {data,error}=await sb.rpc('slots_ocupados',{p_dep:dep,p_fecha:f});
+  if(error)console.error(error);
+  const busy=new Set((data||[]).map(x=>String(x).slice(0,5)));
+  $('agHora').innerHTML=SLOTS.map(h=>`<option value="${h}"${busy.has(h)?' disabled':''}>${h}${busy.has(h)?' (ocupado)':''}</option>`).join('');
+}
+async function loadAg(){
+  const {data,error}=await sb.from('agendamientos').select('*').order('fecha',{ascending:false}).order('hora',{ascending:false});
+  if(error)return fail('agMsg',error); AG=data; renderAg();
 }
 function renderAg(){
-  const rows=AG.map((a,i)=>({...a,i})).sort((x,y)=>(y.fecha+y.hora).localeCompare(x.fecha+x.hora));
-  $('agBody').innerHTML=rows.map(a=>`<tr><td>${fd(a.fecha)}</td><td>${a.hora}</td><td>${a.dep}<small class="text-muted d-block">${a.mod}</small></td><td>${esc(a.mot)}</td>
+  $('agBody').innerHTML=AG.map(a=>`<tr><td>${fd(a.fecha)}</td><td>${a.hora}</td><td>${a.dependencia}<small class="text-muted d-block">${a.modalidad}</small></td>
+    <td>${esc(a.motivo)}${a.respuesta?`<small class="text-muted d-block">Respuesta: ${esc(a.respuesta)}</small>`:''}</td>
     <td><span class="badge ${EAG[a.estado]}">${a.estado}</span></td>
-    <td>${a.estado==='Confirmado'&&a.fecha>=today()?`<button class="btn btn-sm btn-outline-danger" data-cancel="${a.i}">Cancelar</button>`:''}</td></tr>`).join('')
+    <td>${a.estado==='Confirmado'&&a.fecha>=today()?`<button class="btn btn-sm btn-outline-danger" data-cancel="${a.id}">Cancelar</button>`:''}</td></tr>`).join('')
     ||'<tr><td colspan="6" class="text-center text-muted">Todavía no agendaste ninguna atención.</td></tr>';
 }
 
@@ -487,26 +497,37 @@ function initExtra(ci){
   $('agFecha').min=new Date(Date.now()+864e5).toISOString().slice(0,10);$('agFecha').max=new Date(Date.now()+60*864e5).toISOString().slice(0,10);
   renderAg();
   $('solTipo').onchange=solInfo;
-  $('solEnviar').onclick=()=>{
-    const t=TIPOS[+$('solTipo').value];
-    const obs=(t[3]?'Materia: '+$('solMat').value+'. ':'')+$('solObs').value.trim();
-    const n=new Date().getFullYear()+'-'+String(409+SOL.length).padStart(4,'0');
-    SOL.unshift({n,tipo:t[0],dep:t[1],plazo:t[2],fecha:today(),estado:'Pendiente',obs});
-    store.set('upap_sol',SOL);$('solObs').value='';renderSol();
-    $('solMsg').innerHTML=`<div class="alert alert-success py-2 small">Solicitud N° ${n} enviada a ${t[1]}.</div>`;
+  $('solEnviar').onclick=async()=>{
+    const t=TIPOS[+$('solTipo').value],btn=$('solEnviar'); btn.disabled=true;
+    const {data,error}=await sb.from('solicitudes').insert({tipo:t[0],dependencia:t[1],plazo:t[2],materia:t[3]?$('solMat').value:null,obs:$('solObs').value.trim()||null}).select().single();
+    btn.disabled=false;
+    if(error)return fail('solMsg',error);
+    $('solObs').value='';
+    $('solMsg').innerHTML=`<div class="alert alert-success py-2 small">Solicitud N° ${nro(data)} enviada a ${t[1]}. El estado se actualiza acá apenas la atiendan.</div>`;
+    loadSol();
   };
-  $('agBtn').onclick=()=>{
+  $('agBtn').onclick=async()=>{
     const f=$('agFecha').value,h=$('agHora').value;
     if(!f||!h){$('agMsg').innerHTML='<div class="alert alert-warning py-2 small">Elegí una fecha hábil y un horario disponible.</div>';return;}
-    AG.push({dep:$('agDep').value,mot:$('agMot').value,fecha:f,hora:h,mod:$('agMod').value,estado:'Confirmado'});
-    store.set('upap_ag',AG);renderAg();fillHoras();
+    const {error}=await sb.from('agendamientos').insert({dependencia:$('agDep').value,motivo:$('agMot').value,fecha:f,hora:h,modalidad:$('agMod').value,obs:$('agObs').value.trim()||null});
+    if(error){fail('agMsg',error.code==='23505'?{message:'Ese horario ya fue tomado. Elegí otro.'}:error);fillHoras();return;}
+    $('agObs').value='';
     $('agMsg').innerHTML=`<div class="alert alert-success py-2 small">Agendamiento confirmado para el ${fd(f)} a las ${h}.</div>`;
+    loadAg();fillHoras();
   };
-  document.addEventListener('click',e=>{
+  document.addEventListener('click',async e=>{
     const a=e.target.closest('[data-av]');if(a){e.preventDefault();const x=currentData.avisos[+a.dataset.av];openMsg(x[0],fd(x[1]),avisoBody(x));return;}
-    const s=e.target.closest('[data-sol]');if(s){const x=SOL[+s.dataset.sol];openMsg(x.tipo,fd(x.fecha),`Solicitud N° ${x.n}\nDependencia: ${x.dep}\nEstado: ${x.estado}\nPlazo estimado: ${x.plazo}\n\nObservación:\n${x.obs||'Sin observaciones.'}`);return;}
-    const c=e.target.closest('[data-cancel]');if(c){AG[+c.dataset.cancel].estado='Cancelado';store.set('upap_ag',AG);renderAg();fillHoras();}
+    const s=e.target.closest('[data-sol]');if(s){const x=SOL[+s.dataset.sol];
+      openMsg(x.tipo,fd(x.created_at.slice(0,10)),`Solicitud N° ${nro(x)}\nDependencia: ${x.dependencia}\nEstado: ${x.estado}\nPlazo estimado: ${x.plazo||'-'}${x.materia?'\nMateria: '+x.materia:''}\n\nTu observación:\n${x.obs||'Sin observaciones.'}\n\nRespuesta de la dependencia:\n${x.respuesta||'Todavía sin respuesta.'}`);return;}
+    const c=e.target.closest('[data-cancel]');if(c){
+      const {error}=await sb.from('agendamientos').update({estado:'Cancelado'}).eq('id',+c.dataset.cancel);
+      if(error)return fail('agMsg',error); loadAg();fillHoras();}
   });
+  loadSol();loadAg();
+  sb.channel('mis-datos')
+    .on('postgres_changes',{event:'*',schema:'public',table:'solicitudes'},loadSol)
+    .on('postgres_changes',{event:'*',schema:'public',table:'agendamientos'},loadAg).subscribe();
+  window.addEventListener('focus',()=>{loadSol();loadAg();});
 }
 
 /* ---- Eventos ---- */
